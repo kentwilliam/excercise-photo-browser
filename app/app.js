@@ -1,103 +1,106 @@
-// TODO
-// document on DOM loaded
-// prep a layout displaying the data we expect
-// load the data from the endpoint
-// fill in the layout with a nice animation
-// tap on an item to show in a lightbox (on top of the rest)
-// tap on next/previous to navigate
+/// Core application example for a photo browser. The app uses the Flickr API
+/// to generate a set of images and reference their various sizes
 
-import request from './http-request.js';
+require('./css/app.sass');
+import ImageLoader from './image-loader.js';
+import createImageNodeUsingTemplate from './create-image-node-using-template.js'
 
-const photos = [];
-let currentPhotoIndex = 0;
+document.addEventListener('DOMContentLoaded', initialize);
 
-const baseUrl = 'https://api.flickr.com/services/rest/';
-const config = {
-  api_key: '36357bcc49eb2158337eeb5520448f4c',
-  method: 'flickr.photosets.getPhotos',
-  photoset_id: '72157637612059163',
-  format: 'json'
-};
-const queryString = Object
-  .keys(config)
-  .map((key) => `${key}=${config[key]}`)
-  .join('&');
-const url = `${baseUrl}?${queryString}`;
-
-function getImages () {
-  request('get', url, onSuccess, onFailure);
-
-  function onSuccess (xhr) {
-    var response;
-
-    try {
-      response = JSON.parse(unwrap(xhr.response));
-    } catch (error) {
-      console.warn('Invalid JSON response from server', error);
-    }
-
-    const results = getProperty(response, 'photoset.photo');
-    if (results == null) {
-      console.warn('Unexpected data in JSON response from server', response);
-      return;
-    }
-
-    Array.prototype.push.apply(photos, results.map((photo) => {
-      return {
-        data: photo,
-        url: buildPhotoUrl(photo, 'm')
-      };
-    }));
-
-    updateView();
-  }
-
-  function onFailure () {
-    console.error('Failed to retriev data set!');
-  }
-}
-
-/// Looks up an object property chain, if the property is not found it returns undefined.
-function getProperty (object, path) {
-  var pathSegments = path.split('.');
-  var currentContext = object;
-
-  while (pathSegments.length > 0) {
-    var segment = pathSegments.shift();
-    if (typeof currentContext !== 'object') {
-      return;
-    }
-    currentContext = currentContext[segment];
+function initialize () {
+  const state = {
+    photos: [],
+    currentPhotoIndex: null
   };
 
-  return currentContext;
+  // Initialize router
+  window.addEventListener("hashchange", () => updateRoute(state));
+
+  // Tap lightbox to close
+  document.querySelector('.lightbox').addEventListener('click', () => {
+    window.location.hash = '#';
+  });
+
+  // Load data
+  const imageLoader = new ImageLoader(state, () => displayResults(state));
+  imageLoader.loadImages();
+
+  updateRoute(state);
 }
 
-// Constructs the correct URI for the photo
-// Format: https://farm{farm-id}.staticflickr.com/{server-id}/{id}_{secret}_[mstzb].jpg
-function buildPhotoUrl (photo, size = 'm') {
-  const { farm, secret, server, id } = photo;
-  return `https://farm${farm}.staticflickr.com/${server}/${id}_${secret}_${size}.jpg`
+function updateRoute (state) {
+  var currentPhotoIndex = window.location.hash.slice(7);
+
+  state.currentPhotoIndex = currentPhotoIndex ?
+    Number(currentPhotoIndex) :
+    null;
+
+  updateView(state);
 }
 
-// For some reason, the response string is wrapped in `jsonFlickrApi(…)`
-function unwrap (jsonString) {
-  return jsonString
-    .replace(/^jsonFlickrApi\(/, '')
-    .replace(/\)$/, '');
-}
-
-getImages();
-
-function updateView() {
-  let domNode = document.body;
-
-  domNode.innerHTML = '';
+/// When results arrive, populate DOM
+function displayResults(state) {
+  const container = document.createElement('div');
+  const { photos } = state;
 
   for (var i = 0; i < photos.length; i++) {
-    const image = new Image();
-    domNode.appendChild(image);
-    image.src = photos[i].url;
+    const node = createImageNodeUsingTemplate({
+      photo: photos[i],
+      templateId: 'photo',
+      size: 's'
+    });
+    node.href = `#photo=${i}`;
+    container.appendChild(node);
   }
+
+  container.classList.add('photos');
+
+  // Replace whole subtree in one operation
+  const previousContainer = document.querySelector('.photos');
+  previousContainer.parentNode.replaceChild(container, previousContainer);
+
+  updateView(state);
 }
 
+/// Called whenever the state of the application changes
+function updateView(state) {
+  const { photos, currentPhotoIndex } = state;
+  const lightbox = document.querySelector('.lightbox');
+  const previousLink = lightbox.querySelector('.previous');
+  const nextLink = lightbox.querySelector('.next');
+  const showLightbox = typeof currentPhotoIndex === 'number';
+
+  // Remove loading spinner once we have photos
+  if (photos.length) {
+    document.body.classList.remove('is-initial-load');
+  }
+
+  lightbox.classList.toggle('is-active', showLightbox);
+
+  if (!showLightbox) {
+    return;
+  }
+
+  // Update light box contents
+  const hasPrevious = currentPhotoIndex;
+  const hasNext = currentPhotoIndex < photos.length - 1;
+
+  previousLink.classList.toggle('is-active', hasPrevious);
+  if (hasPrevious) {
+    previousLink.href = '#photo=' + (currentPhotoIndex - 1);
+  }
+
+  nextLink.classList.toggle('is-active', hasNext);
+  if (hasNext) {
+    nextLink.href = '#photo=' + (currentPhotoIndex + 1);
+  }
+
+  const photo = createImageNodeUsingTemplate({
+    photo: photos[currentPhotoIndex],
+    templateId: 'lightbox-photo',
+    size: 'l'
+  });
+  const container = lightbox.querySelector('.photo-container');
+  container.innerHTML = '';
+  container.appendChild(photo);
+}

@@ -1,0 +1,172 @@
+// Hide template data
+// NOTE: this is a simple solution, but not ideal. Better here to run templates with
+// a tool like React or Mustache in a production app.
+div[id^=template]
+  display: none
+
+*
+  box-sizing: border-box
+
+body
+  font-family: sans-serif
+  margin: 0
+  padding: 100px 0 0
+
+// Until page is ready, show spinner
+h1, .photos
+  opacity: 1
+  transition: opacity .4s
+
+  .is-initial-load &
+    opacity: 0
+
+.spinner
+  position: absolute
+  top: 50%
+  left: 0
+  right: 0
+  text-align: center
+  transition: .4s
+  opacity: 0
+  text-transform: uppercase
+
+  .is-initial-load &
+    opacity: .3
+
+h1
+  font-family: 'Lato', sans-serif
+  font-weight: 300
+  text-align: center
+  position: fixed
+  background: rgba(255, 255, 255, .95)
+  border-bottom: 1px solid rgba(0, 0, 0, .1)
+  width: 100%
+  padding: 30px
+  top: 0
+  margin: 0
+  z-index: 1
+
+.photos
+  display: flex
+  justify-content: center
+  align-items: space-between
+  flex-wrap: wrap
+
+.photo
+  flex: 1
+  flex-basis: 240px
+  margin: 20px
+  text-decoration: none
+  color: #111
+  line-height: 1.4em
+
+  &:hover
+    opacity: .9
+
+  .image
+    height: 240px
+    display: flex
+    align-items: center
+    justify-content: center
+    flex-direction: column
+
+    img
+      box-shadow: 0 0 3px black
+
+  .description
+    text-align: center
+    padding: 20px 0
+    font-size: 14px
+    font-weight: 300
+
+.lightbox
+  position: fixed
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
+  transition: .4s
+  z-index: 2
+  display: flex
+  justify-content: stretch
+  align-items: center
+  opacity: 0
+  pointer-events: none
+  padding: 20px
+
+  &.is-active
+    opacity: 1
+    pointer-events: all
+
+  .close,
+  .previous,
+  .next
+    border-radius: 15px
+    background: rgba(255, 255, 255, .2)
+    color: white
+    text-decoration: none
+    text-transform: uppercase
+    text-align: center
+
+    &:hover
+      background: rgba(255, 255, 255, .4)
+
+  .close
+    position: absolute
+    bottom: 20px
+    left: 50%
+    margin-left: -100px
+    width: 200px
+    padding: 20px 0
+
+  .previous,
+  .next
+    flex: none
+    width: 150px
+    position: relative
+    padding: 100px 0
+    opacity: 0
+    pointer-events: none
+
+    &.is-active
+      opacity: 1
+      pointer-events: all
+
+  .photo-container
+    flex: 1
+    position: relative
+    height: 100%
+    margin: 0 20px
+    padding: 80px 0 100px
+    display: flex
+    align-items: center
+    justify-content: center
+    line-height: 0
+    text-align: center
+
+    .image,
+    img
+      max-width: 100%
+      max-height: 100%
+      width: auto
+      height: auto
+      position: relative
+
+    .description
+      display: block
+      font-weight: bold
+      color: white
+      line-height: 1.5em
+      padding: 15px
+      max-width: 700px
+      margin: 0 auto
+
+  // screen overlaying the background
+  &:before
+    content: ''
+    background: rgba(0, 0, 0, .8)
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0

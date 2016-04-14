@@ -3,12 +3,28 @@
   <head>
     <meta charset="utf-8">
     <title>Excercise: Photo Browser (Kent William Innholt)</title>
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,300' rel='stylesheet' type='text/css'>
     <meta name="description" content="Excercise: Photo Browser (Kent William Innholt)">
     <meta name="author" content="Kent William Innholt">
     <!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
   </head>
-  <body>
-    <h1>Excercise: Photo Browser</h1>
+  <body class="is-initial-load">
+    <h1>Excercise: Photo Browser // Kent William Innholt</h1>
+
+    <div class="photos"></div>
+
     <script src="app.js"></script>
+
+    <div class="spinner">Loading …</div>
+
+    <div class="lightbox">
+      <a class="previous" href="#">Previous</a>
+      <div class="photo-container"></div>
+      <a class="next" href="#">Next</a>
+      <a class="close" href="#">Close</a>
+    </div>
+
+    <div id="template-photo"><a class="photo" href=""><div class="image"><img src="" alt="Description"></div><div class="description">Photo</div></a></div>
+    <div id="template-lightbox-photo"><div class="lightbox-photo"><div class="image"><img src="" alt="Description"></div><div class="description">Photo</div></div></div>
   </body>
 </html>

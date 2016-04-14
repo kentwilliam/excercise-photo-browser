@@ -1,4 +1,5 @@
-/// Barebones tool to run a single http request
+/// *Barebones* tool to encapsulate the XHR details around running http requests
+
 export default function httpRequest (
   method = 'get',
   url,
